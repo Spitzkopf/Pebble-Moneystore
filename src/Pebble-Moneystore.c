@@ -32,7 +32,6 @@ static const int s_layer_collection_max = sizeof(s_layer_collection) / sizeof(La
 static AppTimer* s_time_return_timer;
 static const int s_return_time = 1000 * 2;
 static bool s_should_set_return_timer = true;
-static bool s_is_time_returing = false;
 
 WatchSettings settings = {
   .celsius = 1,
@@ -40,16 +39,18 @@ WatchSettings settings = {
   .hour_vibe = 1
 };
 
+static void tap_handler(AccelAxisType axis, int32_t direction);
 static void time_layer_timeout_handler(void *data);
 
-static void on_animation_stopped(Animation *anim, bool finished, void *context) {
+static void on_animation_stopped(Animation *anim, bool finished, void *layer) {
     property_animation_destroy((PropertyAnimation*) anim);
     if (s_should_set_return_timer) {
       s_time_return_timer = app_timer_register(s_return_time, (AppTimerCallback)time_layer_timeout_handler, NULL);
       s_should_set_return_timer = false;
     }
-    if ((Layer*)context == text_layer_get_layer(s_time_layer)) {
-      s_is_time_returing = false;
+    if ((Layer*)layer == text_layer_get_layer(s_time_layer)) {
+      //time is now showing, resubscribe
+      accel_tap_service_subscribe(tap_handler);
     }
 }
  
@@ -116,16 +117,14 @@ static void time_layer_timeout_handler(void *data) {
      return;
    }
    s_should_set_return_timer = false;
-   s_is_time_returing = true;   
+   accel_tap_service_unsubscribe();   
 
    swap_layers(s_current_layer, text_layer_get_layer(s_time_layer));    
    s_current_layer =  text_layer_get_layer(s_time_layer);
 }
 
 static void tap_handler(AccelAxisType axis, int32_t direction) {
-  if (!s_is_time_returing) {
     swap_layers_animated();
-  }
 }
 
 static void update_date() {
@@ -297,6 +296,7 @@ static void init() {
 
 static void deinit() {
   window_destroy(s_main_window);
+  accel_tap_service_unsubscribe();
 }
 
 int main(void) {
