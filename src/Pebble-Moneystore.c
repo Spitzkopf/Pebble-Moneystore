@@ -32,7 +32,7 @@ WatchSettings settings = {
   .celsius = 1,
   .bt_vibe = 1,
   .hour_vibe = 1
-}
+};
 
 static void on_animation_stopped(Animation *anim, bool finished, void *context) {
     property_animation_destroy((PropertyAnimation*) anim);
@@ -101,7 +101,7 @@ static void update_time() {
     strftime(buffer, sizeof("00:00"), "%I:%M", tick_time);
   }
   
-  if (settings.hour_vibe && (0 == tick_time.tm_min)) {
+  if (settings.hour_vibe && (0 == tick_time->tm_min)) {
     vibes_short_pulse();
   }
 
