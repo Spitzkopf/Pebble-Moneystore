@@ -23,10 +23,16 @@ static TextLayer *s_time_layer;
 static TextLayer *s_date_layer;
 static TextLayer *s_weather_layer;
 
-static Layer** s_layer_collection[] = { (Layer**)&s_time_layer, (Layer**)&s_date_layer, (Layer**)&s_weather_layer };
-static int s_current_layer = 0;
+static Layer** s_layer_collection[] = { (Layer**)&s_date_layer, (Layer**)&s_weather_layer };
+static Layer* s_current_layer = NULL;
+static int s_next_layer = 0;
 static int s_dx = 1;
 static const int s_layer_collection_max = sizeof(s_layer_collection) / sizeof(Layer**);
+
+static AppTimer* s_time_return_timer;
+static const int s_return_time = 1000 * 2;
+static bool s_should_set_return_timer = true;
+static bool s_is_time_returing = false;
 
 WatchSettings settings = {
   .celsius = 1,
@@ -34,8 +40,17 @@ WatchSettings settings = {
   .hour_vibe = 1
 };
 
+static void time_layer_timeout_handler(void *data);
+
 static void on_animation_stopped(Animation *anim, bool finished, void *context) {
     property_animation_destroy((PropertyAnimation*) anim);
+    if (s_should_set_return_timer) {
+      s_time_return_timer = app_timer_register(s_return_time, (AppTimerCallback)time_layer_timeout_handler, NULL);
+      s_should_set_return_timer = false;
+    }
+    if ((Layer*)context == text_layer_get_layer(s_time_layer)) {
+      s_is_time_returing = false;
+    }
 }
  
 static void animate_layer(Layer *layer, GRect *start, GRect *finish, int duration, int delay) {
@@ -47,7 +62,7 @@ static void animate_layer(Layer *layer, GRect *start, GRect *finish, int duratio
     AnimationHandlers handlers = {
         .stopped = (AnimationStoppedHandler) on_animation_stopped
     };
-    animation_set_handlers((Animation*) anim, handlers, NULL);
+    animation_set_handlers((Animation*) anim, handlers, layer);
     animation_schedule((Animation*) anim);
 }
 
@@ -60,23 +75,57 @@ static GRect get_new_rect_for_layer(GRect to_swap, int direction) {
    return GRect(144 * direction, 87, 144, 38);
 }
 
+static int get_direction_for_swap(GRect layer_to_show) {
+  if (layer_to_show.origin.x >= 144) {
+    return -1;
+  } else if (layer_to_show.origin.x <= -144) {
+    return 1;
+  }
+  return 1;
+}
+
+static void swap_layers(Layer* showing, Layer* hidden) {
+  GRect current_layer_start = layer_get_frame(showing);
+  
+  GRect next_layer_start = layer_get_frame(hidden);
+  GRect next_layer_end = get_new_rect_for_layer(next_layer_start, 0);
+  
+  GRect current_layer_end = get_new_rect_for_layer(current_layer_start, get_direction_for_swap(next_layer_start));
+  
+  animate_layer(showing, &current_layer_start, &current_layer_end, ANIM_DURATION, ANIM_DELAY);
+  animate_layer(hidden, &next_layer_start, &next_layer_end, ANIM_DURATION, ANIM_DELAY);
+}
+
 static void swap_layers_animated() {
-  GRect current_layer_start = layer_get_frame(*s_layer_collection[s_current_layer]);
-  GRect current_layer_end = get_new_rect_for_layer(current_layer_start, s_dx);
+  app_timer_cancel(s_time_return_timer);
   
-  int next_layer_index = (s_current_layer + 1) == s_layer_collection_max ? 0 : s_current_layer + 1; 
-  GRect next_layer_start = layer_get_frame(*s_layer_collection[next_layer_index]);
-  GRect next_layer_end = get_new_rect_for_layer(next_layer_start, s_dx);
+  s_should_set_return_timer = true;
   
-  animate_layer(*s_layer_collection[s_current_layer], &current_layer_start, &current_layer_end, ANIM_DURATION, ANIM_DELAY);
-  animate_layer(*s_layer_collection[next_layer_index], &next_layer_start, &next_layer_end, ANIM_DURATION, ANIM_DELAY);
+  swap_layers(s_current_layer, *s_layer_collection[s_next_layer]);
+  s_current_layer = *s_layer_collection[s_next_layer];
   
-  s_current_layer = next_layer_index;
-  s_dx = s_dx == 1 ? -1 : 1;
+  s_next_layer = (s_next_layer + 1) == s_layer_collection_max ? 0 : s_next_layer + 1;
+}
+
+static void time_layer_timeout_handler(void *data) {
+   Layer* time_layer = text_layer_get_layer(s_time_layer);
+   
+   APP_LOG(APP_LOG_LEVEL_INFO, "Other Layer Timeout");
+   
+   if (time_layer == s_current_layer) {
+     return;
+   }
+   s_should_set_return_timer = false;
+   s_is_time_returing = true;   
+
+   swap_layers(s_current_layer, text_layer_get_layer(s_time_layer));    
+   s_current_layer =  text_layer_get_layer(s_time_layer);
 }
 
 static void tap_handler(AccelAxisType axis, int32_t direction) {
-  swap_layers_animated();
+  if (!s_is_time_returing) {
+    swap_layers_animated();
+  }
 }
 
 static void update_date() {
@@ -101,7 +150,7 @@ static void update_time() {
     strftime(buffer, sizeof("00:00"), "%I:%M", tick_time);
   }
   
-  if (settings.hour_vibe && (0 == tick_time->tm_min)) {
+  if (settings.hour_vibe && (0 == tick_time->tm_min) && (0 == tick_time->tm_sec)) {
     vibes_short_pulse();
   }
 
@@ -157,6 +206,8 @@ static void main_window_load(Window *window) {
   text_layer_set_font(s_time_layer, fonts_get_system_font(FONT_KEY_DROID_SERIF_28_BOLD));
   text_layer_set_text_alignment(s_time_layer, GTextAlignmentCenter);
   layer_add_child(window_get_root_layer(window), text_layer_get_layer(s_time_layer));
+  
+  s_current_layer = text_layer_get_layer(s_time_layer);
   
   s_date_layer = create_text_layer_by_dx();
   text_layer_set_background_color(s_date_layer, GColorWhite);
