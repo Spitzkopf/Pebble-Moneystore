@@ -1,0 +1,105 @@
+<head>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css">
+	<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
+	<!-- Latest compiled and minified JavaScript -->
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+</head>
+<body>
+	<div class="container">
+		 <form id="configure-form" class="form-configure well" action="#" method="POST">
+			<h4>Weather Units</h4>
+	        <p><small>Celsius or Farenheit</small></p>
+	        <div class="btn-group" data-toggle="buttons">
+	          <label class="btn btn-primary">
+	            <input type="radio" name="celsius" id="celsius" value="1"> C
+	          </label>
+	          <label class="btn btn-primary">
+	            <input type="radio" name="celsius" id="farenheit" value="0"> F
+	          </label>
+	        </div>
+	        <hr />
+			<h4>Vibrate on BT disconnect</h4>
+	        <div class="btn-group" data-toggle="buttons">
+	          <label class="btn btn-primary">
+	            <input type="radio" name="bt_vibe" id="bt_vibe_on" value="1"> On
+	          </label>
+	          <label class="btn btn-primary">
+	            <input type="radio" name="bt_vibe" id="bt_vibe_off" value="0"> Off
+	          </label>
+	        </div>
+        	<hr />
+			<h4>Vibrate hourly</h4>
+			<p><small>Vibrate every round hour</small></p>
+	        <div class="btn-group" data-toggle="buttons">
+	          <label class="btn btn-primary">
+	            <input type="radio" name="hour_vibe" id="hour_vibe_on" value="1"> On
+	          </label>
+	          <label class="btn btn-primary">
+	            <input type="radio" name="hour_vibe" id="hour_vibe_off" value="0"> Off
+	          </label>
+	        </div>
+        	<hr />
+		 </form>
+		 <button type="submit" id="b-cancel">Cancel</button>
+		<button type="submit" id="b-submit">Submit</button>
+	</div>
+	<script>
+		function saveOptions() {
+		  var options = {
+		    celsius: $('#celsius').prop('checked') ? 1 : 0,
+			bt_vibe: $('#bt_vibe_on').prop('checked') ? 1 : 0,
+			hour_vibe: $('#hour_vibe_on').prop('checked') ? 1 : 0
+		  };
+		  return options;
+		}
+		
+		$('#b-cancel').click(function() {
+  			document.location = 'pebblejs://close';
+		});
+		
+		$('#b-submit').click(function() {
+		  var location = 'pebblejs://close#' + encodeURIComponent(JSON.stringify(saveOptions()));
+		  document.location = location;
+		});
+		
+		var celsius;
+		var btVibe;
+		var hourVibe;
+		
+		function setDefault(val, def) {
+			return isNaN(val) ?  def : val;
+		}
+		
+		function flipSettings(isOn, onId, offId) {
+			if(isOn) {
+	          $(onId).prop('checked', true);
+	          $(onId).parent().addClass('active');
+	          
+	          $(offId).prop('checked', false);
+	          $(offId).parent().removeClass('active');
+        	} 
+        	else {
+          	  $(onId).prop('checked', false);
+          	  $(onId).parent().removeClass('active');
+          
+          	  $(offId).prop('checked', true);
+          	  $(offId).parent().addClass('active'); 
+       		 }
+		}
+		
+		$().ready(function() {
+			celsius = parseInt(localStorage.getItem("celsius"));
+			btVibe = parseInt(localStorage.getItem("bt_vibe"));
+			hourVibe = parseInt(localStorage.getItem("hour_vibe"));
+			
+			celsius = setDefault(celsius, 1);
+			btVibe = setDefault(btVibe, 1);
+			hourVibe = setDefault(hourVibe, 1);
+			
+			flipSettings(celsius, "#celsius", "#farenheit");
+			flipSettings(btVibe, "#bt_vibe_on", "#bt_vibe_off");
+			flipSettings(hourVibe, "#hour_vibe_on", "#hour_vibe_off");
+		});
+	</script>
+</body>

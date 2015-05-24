@@ -1,0 +1,25 @@
+{
+  "uuid": "a706db2c-dd8b-40f4-a7e3-a8175e9bb0a8",
+  "shortName": "Pebble-Moneystore",
+  "longName": "Pebble-Moneystore",
+  "companyName": "MakeAwesomeHappen",
+  "versionCode": 1,
+  "versionLabel": "1.0",
+  "watchapp": {
+    "watchface": true
+  },
+  "appKeys": {
+    "KEY_TEMPERATURE": 0,
+    "KEY_CONDITIONS": 1
+  },
+  "resources": {
+    "media": [
+      {
+        "type": "png",
+        "name": "IMAGE_BACKGROUND",
+        "file": "moneystore.png"
+      }
+    ]
+  },
+  "capabilities": [ "location", "configurable" ]
+}
