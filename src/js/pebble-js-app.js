@@ -104,8 +104,8 @@ Pebble.addEventListener('appmessage',
 );
 
 Pebble.addEventListener('showConfiguration', function(e){
-  Pebble.openURL('https://still-fjord-3522.herokuapp.com/');
-  //Pebble.openURL('http://10.0.0.11:5000/');
+  Pebble.openURL('https://still-fjord-3522.herokuapp.com/?conf=' + encodeURIComponent(JSON.stringify(config)));
+  //Pebble.openURL('http://10.0.0.11:5000/?conf=' + encodeURIComponent(JSON.stringify(config)));
 });
 
 Pebble.addEventListener('webviewclosed', function(e){
