@@ -31,7 +31,6 @@ static void* layer_collection = NULL;
 
 static AppTimer* s_time_return_timer;
 static const int s_return_time = 1000 * 2;
-static bool s_should_set_return_timer = true;
 
 WatchSettings settings = {
   .celsius = 1,
@@ -50,10 +49,7 @@ static void on_animation_stopped(Animation *anim, bool finished, void *layer) {
       accel_tap_service_subscribe(tap_handler);
     }
     else {
-      if (s_should_set_return_timer) {
-        s_time_return_timer = app_timer_register(s_return_time, (AppTimerCallback)time_layer_timeout_handler, NULL);
-        s_should_set_return_timer = false;
-      }
+      s_time_return_timer = app_timer_register(s_return_time, (AppTimerCallback)time_layer_timeout_handler, NULL);
     }
 }
  
@@ -104,8 +100,6 @@ static void swap_layers(Layer* showing, Layer* hidden) {
 
 static void swap_layers_animated() {
   app_timer_cancel(s_time_return_timer);
-  
-  s_should_set_return_timer = true;
   swap_layers(s_currently_showing_layer, get_next_layer(layer_collection));
 }
 
@@ -119,7 +113,6 @@ static void time_layer_timeout_handler(void *data) {
      return;
    }
    
-   s_should_set_return_timer = false;
    accel_tap_service_unsubscribe();   
 
    swap_layers(current_layer, text_layer_get_layer(s_time_layer));
