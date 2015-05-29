@@ -14,10 +14,13 @@ int set_current_layer(void* layer_collection, int index);
 
 int add_layer(void* layer_collection, Layer* layer);
 int add_layer_at(void* layer_collection, Layer* layer, int index);
-//int remove_layer(void* layer_collection, Layer* layer);
-//int remove_layer_at(void* layer_collection, int index);
+int remove_layer(void* layer_collection, Layer* layer);
+int remove_layer_at(void* layer_collection, int index);
 
 int current_layer_index(void* layer_collection);
+int get_next_index(void* layer_collection);
+int get_previous_index(void* layer_collection);
+int is_index_in_range(void* layer_collection, int index);
 int layer_count(void* layer_collection);
 
 
