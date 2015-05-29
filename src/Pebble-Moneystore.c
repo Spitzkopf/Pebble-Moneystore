@@ -179,12 +179,12 @@ static void update_weather_layer(int weather, char* condition)
 {
   static char temperature_buffer[8];
   static char conditions_buffer[32];
-  static char weather_layer_buffer[32];
+  static char weather_layer_buffer[64];
   char weather_char = settings.celsius ? 'C' : 'F';
   
   if (-1 != weather)
   {
-    snprintf(temperature_buffer, sizeof(temperature_buffer), "%d%c", weather, weather_char);
+    snprintf(temperature_buffer, sizeof(temperature_buffer), "%d%c°", weather, weather_char);
   }
   
   if (condition)
