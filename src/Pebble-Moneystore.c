@@ -7,6 +7,8 @@
 #define ANIM_DURATION 400
 #define ANIM_DELAY 500
 
+#define TIME_LAYER_RETUNR_TIME 2 * 1000
+
 enum AppMessageCodes {
   KEY_TEMPERATURE = 0,
   KEY_CONDITIONS = 1
@@ -26,7 +28,6 @@ static Layer* s_currently_showing_layer = NULL;
 static void* layer_collection = NULL;
 
 static AppTimer* s_time_return_timer = NULL;
-static const int s_return_time = 1000 * 2;
 
 typedef struct {
   int celsius;
@@ -90,7 +91,7 @@ static void layer_to_show_end_callback(Animation *anim, bool finished, void *lay
       accel_tap_service_subscribe(tap_handler);
     }
     else {
-      s_time_return_timer = app_timer_register(s_return_time, (AppTimerCallback)time_layer_timeout_handler, NULL);
+      s_time_return_timer = app_timer_register(TIME_LAYER_RETUNR_TIME, (AppTimerCallback)time_layer_timeout_handler, NULL);
     }
 }
 
