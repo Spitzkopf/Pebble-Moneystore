@@ -10,7 +10,10 @@
   },
   "appKeys": {
     "KEY_TEMPERATURE": 0,
-    "KEY_CONDITIONS": 1
+    "KEY_CONDITIONS": 1,
+    "KEY_CELSIUS": 10,
+    "KEY_BTVIBE": 11,
+    "KEY_HOURVIBE": 12
   },
   "resources": {
     "media": [
