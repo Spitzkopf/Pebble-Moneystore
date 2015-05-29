@@ -151,7 +151,7 @@ static void update_date() {
   struct tm *tick_time = localtime(&temp);
 
   static char buffer[] = "00/00/00";
-  strftime(buffer, sizeof(buffer), "%D", tick_time);
+  strftime(buffer, sizeof(buffer), "%d/%m/%y", tick_time);
   
   text_layer_set_text(s_date_layer, buffer);
 }
