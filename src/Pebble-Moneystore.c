@@ -277,6 +277,8 @@ static void main_window_unload(Window *window) {
   gbitmap_destroy(s_background_bitmap);
   bitmap_layer_destroy(s_background_layer);
   text_layer_destroy(s_time_layer);
+  text_layer_destroy(s_date_layer);
+  text_layer_destroy(s_weather_layer);
   destroy_layer_collection(layer_collection);
 }
 
