@@ -21,6 +21,8 @@ int current_layer_index(void* layer_collection);
 int get_next_index(void* layer_collection);
 int get_previous_index(void* layer_collection);
 int is_index_in_range(void* layer_collection, int index);
+
+int find_layer(void* layer_collection, Layer* layer);
 int layer_count(void* layer_collection);
 
 
